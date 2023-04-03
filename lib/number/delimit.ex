@@ -3,6 +3,9 @@ defmodule Number.Delimit do
   Provides functions to delimit numbers into strings.
   """
 
+  alias Number.Application
+  alias Number.Conversion
+
   @doc """
   Formats a number into a string with grouped thousands using `delimiter`.
 
@@ -27,7 +30,7 @@ defmodule Number.Delimit do
   application configuration.
 
       config :number,
-        delimit: [
+        format: [
           precision: 3,
           delimiter: ",",
           separator: "."
@@ -77,63 +80,36 @@ defmodule Number.Delimit do
       iex> Number.Delimit.number_to_delimited Decimal.new("123456789555555555555555555555555")
       "123,456,789,555,555,555,555,555,555,555,555.00"
   """
-  @spec number_to_delimited(nil, list) :: nil
-  @spec number_to_delimited(Number.t(), list) :: String.t()
-  def number_to_delimited(number, options \\ [])
+  @spec number_to_delimited(nil, any()) :: nil
+  @spec number_to_delimited(Number.t(), Keyword.t() | Map.t()) :: String.t()
+  def number_to_delimited(number, options \\ %{})
   def number_to_delimited(nil, _options), do: nil
-
   def number_to_delimited(number, options) do
-    float = number |> Number.Conversion.to_float()
-    options = Keyword.merge(config(), options)
+    float = Conversion.to_float(number)
+    %{} = options = Application.config(options)
     prefix = if float < 0, do: "-", else: ""
 
     delimited =
-      case to_integer(number) do
+      case Conversion.to_integer(number) do
         {:ok, number} ->
-          number = delimit_integer(number, options[:delimiter])
+          number = delimit_integer(number, options.delimiter)
 
-          if options[:precision] > 0 do
-            decimals = String.pad_trailing("", options[:precision], "0")
-            Enum.join([to_string(number), options[:separator], decimals])
+          if options.precision > 0 do
+            decimals = String.pad_trailing("", options.precision, "0")
+            Enum.join([to_string(number), options.separator, decimals])
           else
             number
           end
 
         {:error, other} ->
           other
-          |> to_string
-          |> Number.Conversion.to_decimal()
-          |> delimit_decimal(options[:delimiter], options[:separator], options[:precision])
+          |> to_string()
+          |> Conversion.to_decimal()
+          |> delimit_decimal(options.delimiter, options.separator, options.precision)
       end
 
     delimited = String.Chars.to_string(delimited)
     prefix <> delimited
-  end
-
-  defp to_integer(integer) when is_integer(integer) do
-    {:ok, integer}
-  end
-
-  defp to_integer(%{__struct__: Decimal} = decimal) do
-    try do
-      {:ok, Decimal.to_integer(decimal)}
-    rescue
-      _ ->
-        {:error, decimal}
-    end
-  end
-
-  defp to_integer(string) when is_binary(string) do
-    try do
-      {:ok, String.to_integer(string)}
-    rescue
-      _ ->
-        {:error, string}
-    end
-  end
-
-  defp to_integer(other) do
-    {:error, other}
   end
 
   defp delimit_integer(number, delimiter) do
@@ -173,15 +149,5 @@ defmodule Number.Delimit do
 
     separator = if precision == 0, do: "", else: separator
     Enum.join([integer, separator, decimals])
-  end
-
-  defp config do
-    defaults = [
-      delimiter: ",",
-      separator: ".",
-      precision: 2
-    ]
-
-    Keyword.merge(defaults, Application.get_env(:number, :delimit, []))
   end
 end

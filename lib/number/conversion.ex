@@ -7,6 +7,9 @@ defprotocol Number.Conversion do
 
   @doc "Converts a value to a Decimal."
   def to_decimal(value)
+
+  @doc "Converts a value to an Integer in an Either style."
+  def to_integer(value)
 end
 
 defimpl Number.Conversion, for: BitString do
@@ -23,6 +26,13 @@ defimpl Number.Conversion, for: BitString do
     string = String.Chars.to_string(value)
     Decimal.new(string)
   end
+
+  def to_integer(value) do
+    case Integer.parse(value) do
+      {int, ""} -> {:ok, int}
+      _ -> {:error, value}
+    end
+  end
 end
 
 defimpl Number.Conversion, for: Float do
@@ -33,6 +43,12 @@ defimpl Number.Conversion, for: Float do
   def to_decimal(value) do
     Decimal.from_float(value)
   end
+
+  def to_integer(value) do
+    value
+    |> to_decimal()
+    |> Number.Conversion.Decimal.to_integer()
+  end
 end
 
 defimpl Number.Conversion, for: Integer do
@@ -42,6 +58,10 @@ defimpl Number.Conversion, for: Integer do
 
   def to_decimal(value) do
     Decimal.new(value)
+  end
+
+  def to_integer(value) do
+    {:ok, value}
   end
 end
 
@@ -59,5 +79,14 @@ defimpl Number.Conversion, for: Decimal do
 
   def to_decimal(value) do
     value
+  end
+
+  def to_integer(value) do
+    try do
+      {:ok, Decimal.to_integer(value)}
+    rescue
+      _ ->
+        {:error, value}
+    end
   end
 end

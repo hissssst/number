@@ -27,8 +27,11 @@ defmodule Number.Mixfile do
     ]
   end
 
+
   def application do
-    [extra_applications: [:logger]]
+    [
+      mod: {Number.Application, []}
+    ]
   end
 
   defp deps do

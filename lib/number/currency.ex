@@ -3,6 +3,8 @@ defmodule Number.Currency do
   Provides functions for converting numbers into formatted currency strings.
   """
 
+  alias Number.Application
+  alias Number.Conversion
   import Number.Delimit, only: [number_to_delimited: 2]
 
   @doc """
@@ -40,7 +42,7 @@ defmodule Number.Currency do
   application configuration.
 
       config :number,
-        currency: [
+        format: [
           unit: "£",
           precision: 2,
           delimiter: ",",
@@ -94,38 +96,30 @@ defmodule Number.Currency do
       "- $ 100,01"
 
   """
-  @spec number_to_currency(Number.t(), list) :: String.t()
+  @spec number_to_currency(Number.t(), Keyword.t()) :: String.t()
   def number_to_currency(number, options \\ [])
   def number_to_currency(nil, _options), do: nil
 
   def number_to_currency(number, options) do
-    options = Keyword.merge(config(), options)
+    %{unit: unit} = options = Application.config(options)
     {number, format} = get_format(number, options)
     number = number_to_delimited(number, options)
 
     format
-    |> String.replace(~r/%u/, options[:unit])
+    |> String.replace(~r/%u/, unit)
     |> String.replace(~r/%n/, number)
   end
 
-  defp get_format(number, options) do
-    number = if is_float(number), do: Decimal.from_float(number), else: Decimal.new(number)
+  @zero_decimal Decimal.new(0)
 
-    case Number.Decimal.compare(number, Decimal.new(0)) do
-      :lt -> {Decimal.abs(number), options[:negative_format] || "-#{options[:format]}"}
-      _ -> {number, options[:format]}
+  defp get_format(number, %{} = options) do
+    number = Conversion.to_decimal(number)
+
+    number
+    |> Number.Decimal.compare(@zero_decimal)
+    |> case do
+      :lt -> {Decimal.abs(number), options.negative_format}
+      _ -> {number, options.format}
     end
-  end
-
-  defp config do
-    defaults = [
-      delimiter: ",",
-      separator: ".",
-      precision: 2,
-      unit: "$",
-      format: "%u%n"
-    ]
-
-    Keyword.merge(defaults, Application.get_env(:number, :currency, []))
   end
 end
