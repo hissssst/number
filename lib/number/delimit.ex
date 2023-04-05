@@ -3,8 +3,14 @@ defmodule Number.Delimit do
   Provides functions to delimit numbers into strings.
   """
 
-  alias Number.Application
   alias Number.Conversion
+
+  @defaults %{
+    precision: 2,
+    delimiter: ",",
+    separator: ".",
+    trim_zero_fraction: false
+  }
 
   @doc """
   Formats a number into a string with grouped thousands using `delimiter`.
@@ -26,15 +32,8 @@ defmodule Number.Delimit do
   * `:separator` - The character to use to separate the number from the decimal
     places. Default: "."
 
-  Default configuration for these options can be specified in the `Number`
-  application configuration.
-
-      config :number,
-        format: [
-          precision: 3,
-          delimiter: ",",
-          separator: "."
-        ]
+  * `:trim_zero_fraction` - Whether to trim the zeroes in fraction part of number.
+    Default: "false"
 
   ## Examples
 
@@ -82,11 +81,12 @@ defmodule Number.Delimit do
   """
   @spec number_to_delimited(nil, any()) :: nil
   @spec number_to_delimited(Number.t(), Keyword.t() | Map.t()) :: String.t()
-  def number_to_delimited(number, options \\ %{})
+  def number_to_delimited(number, options \\ @defaults)
   def number_to_delimited(nil, _options), do: nil
+
   def number_to_delimited(number, options) do
     float = Conversion.to_float(number)
-    %{} = options = Application.config(options)
+    %{} = options = config(options)
     prefix = if float < 0, do: "-", else: ""
 
     delimited =
@@ -105,7 +105,7 @@ defmodule Number.Delimit do
           other
           |> to_string()
           |> Conversion.to_decimal()
-          |> delimit_decimal(options.delimiter, options.separator, options.precision)
+          |> delimit_decimal(options)
       end
 
     delimited = String.Chars.to_string(delimited)
@@ -113,7 +113,8 @@ defmodule Number.Delimit do
   end
 
   defp delimit_integer(number, delimiter) do
-    abs(number)
+    number
+    |> abs()
     |> Integer.to_charlist()
     |> :lists.reverse()
     |> delimit_integer(delimiter, [])
@@ -128,7 +129,12 @@ defmodule Number.Delimit do
   end
 
   @doc false
-  def delimit_decimal(decimal, delimiter, separator, precision) do
+  def delimit_decimal(decimal, %{
+        delimiter: delimiter,
+        separator: separator,
+        precision: precision,
+        trim_zero_fraction: trim_zero_fraction
+      }) do
     string =
       decimal
       |> Decimal.round(precision)
@@ -148,6 +154,26 @@ defmodule Number.Delimit do
       |> delimit_integer(delimiter)
 
     separator = if precision == 0, do: "", else: separator
-    Enum.join([integer, separator, decimals])
+
+    if trim_zero_fraction and decimals == String.duplicate("0", precision) do
+      integer
+    else
+      "#{integer}#{separator}#{decimals}"
+    end
+  end
+
+  defp config(
+         %{
+           precision: _,
+           delimiter: _,
+           separator: _,
+           trim_zero_fraction: _
+         } = options
+       ) do
+    options
+  end
+
+  defp config(options) do
+    Map.merge(@defaults, Map.new(options))
   end
 end

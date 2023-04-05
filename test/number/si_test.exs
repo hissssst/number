@@ -1,3 +1,4 @@
+# credo:disable-for-this-file
 defmodule Number.SITest do
   use ExUnit.Case
   alias Number.SI

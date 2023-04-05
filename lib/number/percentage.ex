@@ -5,6 +5,13 @@ defmodule Number.Percentage do
 
   import Number.Delimit, only: [number_to_delimited: 2]
 
+  @defaults %{
+    precision: 2,
+    delimiter: ",",
+    separator: ".",
+    trim_zero_fraction: false
+  }
+
   @doc """
   Formats a number into a percentage string.
 
@@ -18,7 +25,7 @@ defmodule Number.Percentage do
 
   ## Options
 
-  * `:precision` - The number of decimal places to include. Default: 3
+  * `:precision` - The number of decimal places to include. Default: 2
 
   * `:delimiter` - The character to use to delimit the number by thousands.
     Default: ","
@@ -26,29 +33,22 @@ defmodule Number.Percentage do
   * `:separator` - The character to use to separate the number from the decimal
     places. Default: "."
 
-  Default configuration for these options can be specified in the `Number`
-  application configuration.
-
-      config :number,
-        percentage: [
-          delimiter: ",",
-          separator: ".",
-          precision: 2
-        ]
+  * `:trim_zero_fraction` - Whether to trim the zeroes in fraction part of number.
+    Default: "false"
 
   ## Examples
 
       iex> Number.Percentage.number_to_percentage(100)
-      "100.000%"
+      "100.00%"
 
       iex> Number.Percentage.number_to_percentage("98")
-      "98.000%"
+      "98.00%"
 
       iex> Number.Percentage.number_to_percentage(100, precision: 0)
       "100%"
 
       iex> Number.Percentage.number_to_percentage(1000, delimiter: '.', separator: ',')
-      "1.000,000%"
+      "1.000,00%"
 
       iex> Number.Percentage.number_to_percentage(302.24398923423, precision: 5)
       "302.24399%"
@@ -56,22 +56,27 @@ defmodule Number.Percentage do
       iex> Number.Percentage.number_to_percentage(Decimal.from_float(59.236), precision: 2)
       "59.24%"
   """
-  @spec number_to_percentage(number, Keyword.t()) :: String.t()
-  def number_to_percentage(number, options \\ [])
+  @spec number_to_percentage(Number.t(), Keyword.t() | Map.t()) :: String.t()
+  def number_to_percentage(number, options \\ @defaults)
 
   def number_to_percentage(number, options) do
-    options = Keyword.merge(config(), options)
+    options = config(options)
     number = number_to_delimited(number, options)
     number <> "%"
   end
 
-  defp config do
-    defaults = [
-      delimiter: ",",
-      separator: ".",
-      precision: 3
-    ]
+  defp config(
+         %{
+           precision: _,
+           delimiter: _,
+           separator: _,
+           trim_zero_fraction: _
+         } = options
+       ) do
+    options
+  end
 
-    Keyword.merge(defaults, Application.get_env(:number, :percentage, []))
+  defp config(options) do
+    Map.merge(@defaults, Map.new(options))
   end
 end

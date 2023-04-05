@@ -1,8 +1,8 @@
 defmodule Number.Mixfile do
   use Mix.Project
 
-  @source_url "https://github.com/danielberkompas/number"
-  @version "1.0.3"
+  @source_url "https://github.com/hissssst/number"
+  @version "1.0.0"
 
   def project do
     [
@@ -13,7 +13,6 @@ defmodule Number.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
-      lockfile: lockfile(),
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
@@ -29,15 +28,15 @@ defmodule Number.Mixfile do
 
 
   def application do
-    [
-      mod: {Number.Application, []}
-    ]
+    []
   end
 
   defp deps do
     [
-      {:decimal, "~> 1.5 or ~> 2.0"},
+      {:decimal, "~> 2.0"},
       {:excoveralls, ">= 0.0.0", only: :test},
+      {:credo, "~> 1.7", only: :dev},
+      {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
       {:inch_ex, ">= 0.0.0", only: [:dev, :test]}
     ]
@@ -55,19 +54,12 @@ defmodule Number.Mixfile do
   defp package do
     [
       files: ["lib", "mix.exs", "README.md", "CHANGELOG.md", "LICENSE"],
-      maintainers: ["Daniel Berkompas"],
+      maintainers: ["Hissssst"],
       licenses: ["MIT"],
       links: %{
-        "Changelog" => "https://hexdocs.pm/number/changelog.html",
+        "Changelog" => "https://hexdocs.pm/better_number/changelog.html",
         "GitHub" => @source_url
       }
     ]
-  end
-
-  defp lockfile() do
-    case System.get_env("DECIMAL_VERSION") do
-      "1" -> "mix-decimal1.lock"
-      _ -> "mix.lock"
-    end
   end
 end

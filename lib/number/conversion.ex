@@ -82,11 +82,9 @@ defimpl Number.Conversion, for: Decimal do
   end
 
   def to_integer(value) do
-    try do
-      {:ok, Decimal.to_integer(value)}
-    rescue
-      _ ->
-        {:error, value}
-    end
+    {:ok, Decimal.to_integer(value)}
+  rescue
+    _ ->
+      {:error, value}
   end
 end

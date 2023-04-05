@@ -3,11 +3,10 @@ defmodule Number.Currency do
   Provides functions for converting numbers into formatted currency strings.
   """
 
-  alias Number.Application
   alias Number.Conversion
   import Number.Delimit, only: [number_to_delimited: 2]
 
-  @doc """
+  @doc ~S[
   Converts a number to a formatted currency string.
 
   ## Parameters
@@ -38,18 +37,8 @@ defmodule Number.Currency do
   * `:negative_format` - The format of the number when it is negative. Uses the
     same formatting placeholders as the `:format` option.
 
-  Default config for these options can be specified in the `Number`
-  application configuration.
-
-      config :number,
-        format: [
-          unit: "£",
-          precision: 2,
-          delimiter: ",",
-          separator: ".",
-          format: "%u%n",           # "£30.00"
-          negative_format: "(%u%n)" # "(£30.00)"
-        ]
+  * `:trim_zero_fraction` - Whether to trim the zeroes in fraction part of number.
+    Default: "false"
 
   ## Examples
 
@@ -77,13 +66,13 @@ defmodule Number.Currency do
       iex> Number.Currency.number_to_currency(1234567890.506, precision: 3)
       "$1,234,567,890.506"
 
-      iex> Number.Currency.number_to_currency(-1234567890.50, negative_format: "(%u%n)")
+      iex> Number.Currency.number_to_currency(-1234567890.50, negative_format: &"(#{&1}#{&2})")
       "($1,234,567,890.50)"
 
       iex> Number.Currency.number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "")
       "R$1234567890,50"
 
-      iex> Number.Currency.number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "", format: "%n %u")
+      iex> Number.Currency.number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "", format: &"#{&2} #{&1}")
       "1234567890,50 R$"
 
       iex> Number.Currency.number_to_currency(Decimal.from_float(50.0))
@@ -92,22 +81,19 @@ defmodule Number.Currency do
       iex> Number.Currency.number_to_currency(Decimal.from_float(-100.01))
       "-$100.01"
 
-      iex> Number.Currency.number_to_currency(Decimal.from_float(-100.01), unit: "$", separator: ",", delimiter: ".", negative_format: "- %u %n")
+      iex> Number.Currency.number_to_currency(Decimal.from_float(-100.01), unit: "$", separator: ",", delimiter: ".", negative_format: &"- #{&1} #{&2}")
       "- $ 100,01"
-
-  """
-  @spec number_to_currency(Number.t(), Keyword.t()) :: String.t()
+  ]
+  @spec number_to_currency(Number.t(), Keyword.t() | Map.t()) :: String.t()
   def number_to_currency(number, options \\ [])
   def number_to_currency(nil, _options), do: nil
 
   def number_to_currency(number, options) do
-    %{unit: unit} = options = Application.config(options)
+    %{unit: unit} = options = config(options)
     {number, format} = get_format(number, options)
     number = number_to_delimited(number, options)
 
-    format
-    |> String.replace(~r/%u/, unit)
-    |> String.replace(~r/%n/, number)
+    format.(unit, number)
   end
 
   @zero_decimal Decimal.new(0)
@@ -116,10 +102,43 @@ defmodule Number.Currency do
     number = Conversion.to_decimal(number)
 
     number
-    |> Number.Decimal.compare(@zero_decimal)
+    |> Decimal.compare(@zero_decimal)
     |> case do
       :lt -> {Decimal.abs(number), options.negative_format}
       _ -> {number, options.format}
+    end
+  end
+
+  defp config(
+         %{
+           unit: _,
+           precision: _,
+           delimiter: _,
+           separator: _,
+           format: _,
+           trim_zero_fraction: _,
+           negative_format: _
+         } = options
+       ) do
+    options
+  end
+
+  defp config(options) do
+    %{
+      unit: "$",
+      precision: 2,
+      delimiter: ",",
+      separator: ".",
+      format: fn unit, number -> unit <> number end,
+      trim_zero_fraction: false
+    }
+    |> Map.merge(Map.new(options))
+    |> case do
+      %{negative_format: _} = options ->
+        options
+
+      %{format: format} = options ->
+        Map.put(options, :negative_format, fn unit, number -> "-" <> format.(unit, number) end)
     end
   end
 end

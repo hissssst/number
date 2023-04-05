@@ -39,6 +39,14 @@ defmodule Number.SI do
     {-8, "y"}
   ]
 
+  @defaults %{
+    base: 1000,
+    separator: "",
+    unit: "",
+    precision: 2,
+    trim: false
+  }
+
   @doc """
   Format numbers using SI notation
 
@@ -63,16 +71,6 @@ defmodule Number.SI do
 
   * `:trim` - Trim trailing zeros. Default: false
 
-  Default configuration for these options can be specified in the `Number`
-  application configuration.
-
-      config :number,
-        si: [
-          separator: " ",
-          precision: 4,
-          trim: true
-        ]
-
   ## Examples
 
       iex> Number.SI.number_to_si(1210000000, unit: "W")
@@ -92,34 +90,24 @@ defmodule Number.SI do
 
       iex> Number.SI.number_to_si(Decimal.new(1210000000))
       "1.21G"
-
-      iex> Number.SI.number_to_si('charlist')
-      ** (ArgumentError) number must be a float, integer or implement `Number.Conversion` protocol, was 'charlist'
   """
-  @spec number_to_si(number, list) :: String.t()
-  def number_to_si(number, options \\ [])
+  @spec number_to_si(Number.t(), Map.t() | Keyword.t()) :: String.t()
+  def number_to_si(number, options \\ @defaults)
 
   def number_to_si(number, options) when is_number(number) do
-    options = Keyword.merge(config(), options)
-    exp = compute_exponent(number, options[:base])
+    options = config(options)
+    exp = compute_exponent(number, options.base)
     prefix = exponent_to_prefix(exp)
-    scaled_number = number / :math.pow(options[:base], exp)
-    display_number = :erlang.float_to_binary(scaled_number, [{:decimals, options[:precision]}])
-    final_number = if options[:trim], do: trim(display_number), else: display_number
-    final_number <> options[:separator] <> prefix <> options[:unit]
+    scaled_number = number / :math.pow(options.base, exp)
+    display_number = :erlang.float_to_binary(scaled_number, [{:decimals, options.precision}])
+    final_number = if options.trim, do: trim(display_number), else: display_number
+    final_number <> options.separator <> prefix <> options.unit
   end
 
   def number_to_si(number, options) do
-    if Number.Conversion.impl_for(number) do
-      number
-      |> Number.Conversion.to_float()
-      |> number_to_si(options)
-    else
-      raise ArgumentError,
-            "number must be a float, integer or implement `Number.Conversion` protocol, was #{
-              inspect(number)
-            }"
-    end
+    number
+    |> Number.Conversion.to_float()
+    |> number_to_si(options)
   end
 
   defp compute_exponent(number, _) when number == 0, do: 0
@@ -127,14 +115,14 @@ defmodule Number.SI do
   defp compute_exponent(number, base) do
     (:math.log(abs(number)) / :math.log(base))
     |> Float.floor()
-    |> trunc
+    |> trunc()
     |> max(-8)
     |> min(8)
   end
 
   @doc false
   for {num, text} = _p <- @prefixes do
-    def exponent_to_prefix(number) when number == unquote(num), do: unquote(text)
+    def exponent_to_prefix(unquote(num)), do: unquote(text)
   end
 
   defp trim(display_number) do
@@ -147,14 +135,19 @@ defmodule Number.SI do
     end
   end
 
-  defp config do
-    defaults = [
-      base: 1000,
-      separator: "",
-      unit: "",
-      precision: 2
-    ]
+  defp config(
+         %{
+           base: _,
+           separator: _,
+           unit: _,
+           precision: _,
+           trim: _
+         } = options
+       ) do
+    options
+  end
 
-    Keyword.merge(defaults, Application.get_env(:number, :si, []))
+  defp config(options) do
+    Map.merge(@defaults, Map.new(options))
   end
 end

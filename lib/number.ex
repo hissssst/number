@@ -25,7 +25,7 @@ defmodule Number do
   contains documentation on how to configure it.
   """
 
-  @type t :: number | Decimal.t()
+  @type t :: number() | Decimal.t()
 
   @doc false
   defmacro __using__(_) do
@@ -37,4 +37,28 @@ defmodule Number do
       import Number.Human
     end
   end
+
+  defdelegate to_currency(number, opts \\ %{}),
+    to: Number.Currency,
+    as: :number_to_currency
+
+  defdelegate to_delimited(number, opts \\ %{}),
+    to: Number.Delimit,
+    as: :number_to_delimited
+
+  defdelegate to_phone(number, opts \\ %{}),
+    to: Number.Phone,
+    as: :number_to_phone
+
+  defdelegate to_percentage(number, opts \\ %{}),
+    to: Number.Percentage,
+    as: :number_to_percentage
+
+  defdelegate to_human(number, opts \\ %{}),
+    to: Number.Human,
+    as: :number_to_human
+
+  defdelegate to_ordinal(number),
+    to: Number.Human,
+    as: :number_to_ordinal
 end
