@@ -28,14 +28,12 @@ defmodule Number.Currency do
   * `:separator` - The character to use to separate the number from the decimal
     places. Default: "."
 
-  * `:format` - The format of the number. This can be used to put the currency
-    symbol in a different place.  See the examples for usage. There are two
-    supported format string placeholders:
-      * `%u` - Represents the currency symbol, or unit.
-      * `%n` - Represents the number.
+  * `:format` - Function which converts number and unit to the final string.
+    Default: `fn unit, number -> unit <> number end`
 
   * `:negative_format` - The format of the number when it is negative. Uses the
-    same formatting placeholders as the `:format` option.
+    same formatting placeholders as the `:format` option. Default value is derived
+    from `:format` option just with "-" prefix.
 
   * `:trim_zero_fraction` - Whether to trim the zeroes in fraction part of number.
     Default: "false"

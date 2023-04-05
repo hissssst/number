@@ -94,11 +94,13 @@ defmodule Number.Delimit do
         {:ok, number} ->
           number = delimit_integer(number, options.delimiter)
 
-          if options.precision > 0 do
-            decimals = String.pad_trailing("", options.precision, "0")
-            Enum.join([to_string(number), options.separator, decimals])
-          else
-            number
+          case options do
+            %{precision: x, trim_zero_fraction: false} when x != 0 ->
+              decimals = String.duplicate("0", options.precision)
+              to_string(number) <> options.separator <> decimals
+
+            _ ->
+              number
           end
 
         {:error, other} ->
