@@ -40,46 +40,46 @@ defmodule Number.Currency do
 
   ## Examples
 
-      iex> Number.Currency.number_to_currency(nil)
+      iex> number_to_currency(nil)
       nil
 
-      iex> Number.Currency.number_to_currency(1000)
+      iex> number_to_currency(1000)
       "$1,000.00"
 
-      iex> Number.Currency.number_to_currency(1000, unit: "£")
+      iex> number_to_currency(1000, unit: "£")
       "£1,000.00"
 
-      iex> Number.Currency.number_to_currency(-1000)
+      iex> number_to_currency(-1000)
       "-$1,000.00"
 
-      iex> Number.Currency.number_to_currency(-234234.23)
+      iex> number_to_currency(-234234.23)
       "-$234,234.23"
 
-      iex> Number.Currency.number_to_currency(1234567890.50)
+      iex> number_to_currency(1234567890.50)
       "$1,234,567,890.50"
 
-      iex> Number.Currency.number_to_currency(1234567890.506)
+      iex> number_to_currency(1234567890.506)
       "$1,234,567,890.51"
 
-      iex> Number.Currency.number_to_currency(1234567890.506, precision: 3)
+      iex> number_to_currency(1234567890.506, precision: 3)
       "$1,234,567,890.506"
 
-      iex> Number.Currency.number_to_currency(-1234567890.50, negative_format: &"(#{&1}#{&2})")
+      iex> number_to_currency(-1234567890.50, negative_format: &"(#{&1}#{&2})")
       "($1,234,567,890.50)"
 
-      iex> Number.Currency.number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "")
+      iex> number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "")
       "R$1234567890,50"
 
-      iex> Number.Currency.number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "", format: &"#{&2} #{&1}")
+      iex> number_to_currency(1234567890.50, unit: "R$", separator: ",", delimiter: "", format: &"#{&2} #{&1}")
       "1234567890,50 R$"
 
-      iex> Number.Currency.number_to_currency(Decimal.from_float(50.0))
+      iex> number_to_currency(Decimal.from_float(50.0))
       "$50.00"
 
-      iex> Number.Currency.number_to_currency(Decimal.from_float(-100.01))
+      iex> number_to_currency(Decimal.from_float(-100.01))
       "-$100.01"
 
-      iex> Number.Currency.number_to_currency(Decimal.from_float(-100.01), unit: "$", separator: ",", delimiter: ".", negative_format: &"- #{&1} #{&2}")
+      iex> number_to_currency(Decimal.from_float(-100.01), unit: "$", separator: ",", delimiter: ".", negative_format: &"- #{&1} #{&2}")
       "- $ 100,01"
   ]
   @spec number_to_currency(Number.t(), Keyword.t() | Map.t()) :: String.t()

@@ -37,47 +37,53 @@ defmodule Number.Delimit do
 
   ## Examples
 
-      iex> Number.Delimit.number_to_delimited(nil)
+      iex> number_to_delimited(nil)
       nil
 
-      iex> Number.Delimit.number_to_delimited(998.999)
+      iex> number_to_delimited(998.999)
       "999.00"
 
-      iex> Number.Delimit.number_to_delimited(-234234.234)
+      iex> number_to_delimited(-234234.234)
       "-234,234.23"
 
-      iex> Number.Delimit.number_to_delimited("998.999")
+      iex> number_to_delimited("998.999")
       "999.00"
 
-      iex> Number.Delimit.number_to_delimited("-234234.234")
+      iex> number_to_delimited("-234234.234")
       "-234,234.23"
 
-      iex> Number.Delimit.number_to_delimited(12345678)
+      iex> number_to_delimited(12345678)
       "12,345,678.00"
 
-      iex> Number.Delimit.number_to_delimited(12345678.05)
+      iex> number_to_delimited(12345678.05)
       "12,345,678.05"
 
-      iex> Number.Delimit.number_to_delimited(12345678, delimiter: ".")
+      iex> number_to_delimited(12345678, delimiter: ".")
       "12.345.678.00"
 
-      iex> Number.Delimit.number_to_delimited(12345678, delimiter: ",")
+      iex> number_to_delimited(12345678, delimiter: ",")
       "12,345,678.00"
 
-      iex> Number.Delimit.number_to_delimited(12345678.05, separator: " ")
+      iex> number_to_delimited(12345678.05, separator: " ")
       "12,345,678 05"
 
-      iex> Number.Delimit.number_to_delimited(98765432.98, delimiter: " ", separator: ",")
+      iex> number_to_delimited(98765432.98, delimiter: " ", separator: ",")
       "98 765 432,98"
 
-      iex> Number.Delimit.number_to_delimited(Decimal.from_float(9998.2))
+      iex> number_to_delimited(Decimal.from_float(9998.2))
       "9,998.20"
 
-      iex> Number.Delimit.number_to_delimited "123456789555555555555555555555555"
+      iex> number_to_delimited "123456789555555555555555555555555"
       "123,456,789,555,555,555,555,555,555,555,555.00"
 
-      iex> Number.Delimit.number_to_delimited Decimal.new("123456789555555555555555555555555")
+      iex> number_to_delimited Decimal.new "123456789555555555555555555555555"
       "123,456,789,555,555,555,555,555,555,555,555.00"
+
+      iex> number_to_delimited(123456, trim_zero_fraction: true)
+      "123,456"
+
+      iex> number_to_delimited(123456.5, trim_zero_fraction: true)
+      "123,456.50"
   """
   @spec number_to_delimited(nil, any()) :: nil
   @spec number_to_delimited(Number.t(), Keyword.t() | Map.t()) :: String.t()
@@ -97,7 +103,7 @@ defmodule Number.Delimit do
           case options do
             %{precision: x, trim_zero_fraction: false} when x != 0 ->
               decimals = String.duplicate("0", options.precision)
-              to_string(number) <> options.separator <> decimals
+              to_string(number) <> to_string(options.separator) <> decimals
 
             _ ->
               number
@@ -137,13 +143,12 @@ defmodule Number.Delimit do
         precision: precision,
         trim_zero_fraction: trim_zero_fraction
       }) do
-    string =
+    [number, decimals] =
       decimal
       |> Decimal.round(precision)
       |> Decimal.to_string(:normal)
-
-    [number, decimals] =
-      case String.split(string, ".") do
+      |> String.split(".")
+      |> case do
         [number, decimals] -> [number, decimals]
         [number] -> [number, ""]
       end
@@ -155,12 +160,10 @@ defmodule Number.Delimit do
       |> String.to_integer()
       |> delimit_integer(delimiter)
 
-    separator = if precision == 0, do: "", else: separator
-
     if trim_zero_fraction and decimals == String.duplicate("0", precision) do
       integer
     else
-      "#{integer}#{separator}#{decimals}"
+      to_string(integer) <> separator <> decimals
     end
   end
 

@@ -23,39 +23,39 @@ defmodule Number.Human do
 
   ## Examples
 
-      iex> Number.Human.number_to_human(123)
+      iex> number_to_human(123)
       "123.00"
-      iex> Number.Human.number_to_human(1234)
+      iex> number_to_human(1234)
       "1.23 Thousand"
-      iex> Number.Human.number_to_human(999001)
+      iex> number_to_human(999001)
       "999.00 Thousand"
-      iex> Number.Human.number_to_human(1234567)
+      iex> number_to_human(1234567)
       "1.23 Million"
-      iex> Number.Human.number_to_human(1234567890)
+      iex> number_to_human(1234567890)
       "1.23 Billion"
-      iex> Number.Human.number_to_human(1234567890123)
+      iex> number_to_human(1234567890123)
       "1.23 Trillion"
-      iex> Number.Human.number_to_human(1234567890123456)
+      iex> number_to_human(1234567890123456)
       "1.23 Quadrillion"
-      iex> Number.Human.number_to_human(1234567890123456789)
+      iex> number_to_human(1234567890123456789)
       "1,234.57 Quadrillion"
-      iex> Number.Human.number_to_human(Decimal.new("5000.0"))
+      iex> number_to_human(Decimal.new("5000.0"))
       "5.00 Thousand"
-      iex> Number.Human.number_to_human(123, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(123, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "123.00 B"
-      iex> Number.Human.number_to_human(1234, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(1234, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "1.23 KB"
-      iex> Number.Human.number_to_human(999001, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(999001, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "999.00 KB"
-      iex> Number.Human.number_to_human(1234567, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(1234567, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "1.23 MB"
-      iex> Number.Human.number_to_human(1234567890, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(1234567890, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "1.23 GB"
-      iex> Number.Human.number_to_human(1234567890123, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(1234567890123, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "1.23 TB"
-      iex> Number.Human.number_to_human(1234567890123456, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(1234567890123456, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "1.23 PB"
-      iex> Number.Human.number_to_human(1234567890123456789, units: ["B", "KB", "MB", "GB", "TB", "PB"])
+      iex> number_to_human(1234567890123456789, units: ["B", "KB", "MB", "GB", "TB", "PB"])
       "1,234.57 PB"
   """
   @spec number_to_human(Number.t(), Map.t() | Keyword.t()) :: String.t()
