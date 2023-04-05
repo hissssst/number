@@ -1,15 +1,5 @@
 # Number
 
-[![Build Status](https://danielberkompas.semaphoreci.com/badges/number/branches/master.svg?style=shields)](https://danielberkompas.semaphoreci.com/projects/number)
-[![Inline docs](http://inch-ci.org/github/danielberkompas/number.svg?branch=master)](http://inch-ci.org/github/danielberkompas/number)
-[![Coverage Status](https://coveralls.io/repos/github/danielberkompas/number/badge.svg?branch=master)](https://coveralls.io/github/danielberkompas/number?branch=master)
-[![Module Version](https://img.shields.io/hexpm/v/number.svg)](https://hex.pm/packages/number)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/number/)
-[![Total Download](https://img.shields.io/hexpm/dt/number.svg)](https://hex.pm/packages/number)
-[![License](https://img.shields.io/hexpm/l/number.svg)](https://github.com/danielberkompas/number/blob/master/LICENSE)
-[![Last Updated](https://img.shields.io/github/last-commit/danielberkompas/number.svg)](https://github.com/danielberkompas/number/commits/master)
-
-
 `Number` is an [Elixir](https://github.com/elixir-lang/elixir) library which
 provides functions to convert numbers into a variety of different formats.
 Ultimately, it aims to be a partial clone of
